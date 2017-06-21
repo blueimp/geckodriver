@@ -4,16 +4,11 @@
 
 FROM blueimp/basedriver
 
-# Add the Firefox release channel of the Debian Mozilla team:
-RUN echo 'deb http://mozilla.debian.net/ jessie-backports firefox-release' >> \
-  /etc/apt/sources.list \
-  && curl -sL https://mozilla.debian.net/archive.asc | apt-key add -
-
 # Install Firefox:
 RUN export DEBIAN_FRONTEND=noninteractive \
   && apt-get update \
   && apt-get install --no-install-recommends --no-install-suggests -y \
-    firefox \
+    firefox-esr \
   # Remove obsolete files:
   && apt-get clean \
   && rm -rf \
