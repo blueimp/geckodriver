@@ -29,4 +29,6 @@ RUN export BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
 
 USER webdriver
 
-CMD ["geckodriver", "--host", "0.0.0.0"]
+ENTRYPOINT ["entrypoint", "geckodriver"]
+
+CMD ["--host", "0.0.0.0"]
