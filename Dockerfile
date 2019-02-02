@@ -32,3 +32,5 @@ USER webdriver
 ENTRYPOINT ["entrypoint", "geckodriver"]
 
 CMD ["--host", "0.0.0.0"]
+
+EXPOSE 4444
