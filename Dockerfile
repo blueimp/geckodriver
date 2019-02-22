@@ -4,12 +4,20 @@
 
 FROM blueimp/basedriver
 
-# Install Firefox:
+# Install the latest version of Firefox:
 RUN export DEBIAN_FRONTEND=noninteractive \
   && apt-get update \
   && apt-get install --no-install-recommends --no-install-suggests -y \
-    firefox-esr \
+    # Firefox dependencies:
+    libgtk-3-0 \
+    libdbus-glib-1-2 \
+    bzip2 \
+  && DL='https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64' \
+  && curl -sL "$DL" | tar -xj -C /opt \
+  && ln -s /opt/firefox/firefox /usr/local/bin/ \
   # Remove obsolete files:
+  && apt-get autoremove --purge -y \
+    bzip2 \
   && apt-get clean \
   && rm -rf \
     /tmp/* \
@@ -18,14 +26,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-# Install geckodriver:
-RUN export BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
-  && export VERSION=$(curl -sL \
+# Install the latest version of Geckodriver:
+RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
+  && VERSION=$(curl -sL \
     https://api.github.com/repos/mozilla/geckodriver/releases/latest | \
     grep tag_name | cut -d '"' -f 4) \
-  && curl -sL \
-  $BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz | tar -xz \
-  && mv geckodriver /usr/local/bin/geckodriver
+  && curl -sL "$BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz" | \
+    tar -xz -C /usr/local/bin
 
 USER webdriver
 
