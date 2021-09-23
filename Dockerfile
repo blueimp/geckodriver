@@ -11,7 +11,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     # Firefox dependencies:
     libgtk-3-0 \
     libdbus-glib-1-2 \
+    # Bzip2 to extract the Firefox tarball:
     bzip2 \
+    # Reverse proxy for geckodriver, which only allows local connections:
+    tinyproxy-bin \
   && DL='https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64' \
   && curl -sL "$DL" | tar -xj -C /opt \
   && ln -s /opt/firefox/firefox /usr/local/bin/ \
@@ -34,10 +37,15 @@ RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
   && curl -sL "$BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz" | \
     tar -xz -C /usr/local/bin
 
+COPY tinyproxy.conf /etc/tinyproxy/
+COPY reverse-proxy.sh /usr/local/bin/reverse-proxy
+
 USER webdriver
 
-ENTRYPOINT ["entrypoint", "geckodriver"]
+ENTRYPOINT ["entrypoint", "reverse-proxy", "geckodriver"]
 
-CMD ["--host", "0.0.0.0"]
+# Bind geckodriver to port 4445:
+CMD ["--port", "4445"]
 
+# Expose tinyproxy on port 4444, forwarding to geckodriver on port 4445:
 EXPOSE 4444
