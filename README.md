@@ -24,8 +24,6 @@ version: "3.7"
 services:
   geckodriver:
     image: blueimp/geckodriver
-    # Start the container with an init process:
-    init: true
     # Mount the /tmp partition as tmpfs:
     tmpfs: /tmp
     # Set the size of the /dev/shm partition:
