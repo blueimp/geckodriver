@@ -13,8 +13,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libdbus-glib-1-2 \
     # Bzip2 to extract the Firefox tarball:
     bzip2 \
-    # Reverse proxy for geckodriver, which only allows local connections:
-    tinyproxy-bin \
+    # Reverse proxy for geckodriver:
+    nginx \
   && DL='https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64' \
   && curl -sL "$DL" | tar -xj -C /opt \
   && ln -s /opt/firefox/firefox /usr/local/bin/ \
@@ -37,15 +37,21 @@ RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
   && curl -sL "$BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz" | \
     tar -xz -C /usr/local/bin
 
-COPY tinyproxy.conf /etc/tinyproxy/
+# Configure nginx to run in a container context:
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN cd /var/lib/nginx && mkdir body proxy fastcgi uwsgi scgi
+RUN touch /run/nginx.pid && chown -R webdriver:webdriver /run/nginx.pid
+
+COPY nginx.conf /etc/nginx/
 COPY reverse-proxy.sh /usr/local/bin/reverse-proxy
 
 USER webdriver
 
 ENTRYPOINT ["entrypoint", "reverse-proxy", "geckodriver"]
 
-# Bind geckodriver to port 4445:
-CMD ["--port", "4445"]
+# Bind geckodriver to port 5555:
+CMD ["--port", "5555"]
 
-# Expose tinyproxy on port 4444, forwarding to geckodriver on port 4445:
+# Expose nginx on port 4444, forwarding to geckodriver on port 5555:
 EXPOSE 4444
